@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+<RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
@@ -30,5 +35,37 @@
         android:layout_marginEnd="30dp"
         />
 
+    <TextView
+        android:id="@+id/tvOriginal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1. Original Image"
+        android:textSize="30sp"
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/bOpenCamera"
+        />
+
+   <ImageView
+       android:id="@+id/ivOriginal"
+       android:layout_width="400dp"
+       android:layout_height="400dp"
+       android:layout_below="@+id/tvOriginal"
+       android:layout_centerHorizontal="true"
+       android:layout_marginStart="10dp"
+       android:layout_marginEnd="10dp"/>
+
+    <Button
+        android:id="@+id/bPerformProcessing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="Perform Processing"
+        android:layout_below="@id/ivOriginal"
+        android:layout_centerHorizontal="true"
+        />
+
+
 
 </RelativeLayout>
+</ScrollView>
