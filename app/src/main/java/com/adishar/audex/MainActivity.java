@@ -12,6 +12,7 @@ import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvOriginal;
     private TextView tvProcessed;
     private TextView tvProgressTag;
+    private Handler mainUIHandler;
 
     private AlertDialog aErrorAlert;
     private GraphView gvGraph;
@@ -57,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mainUIHandler=new Handler(this.getMainLooper());
         bOpenCamera=findViewById(R.id.bOpenCamera);
         bBrowseImage=findViewById(R.id.bBrowseImage);
 
@@ -143,8 +147,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 bPerformProcessing.setEnabled(false);
+                tvProgressTag.setText("Processing...");
                 tvProgressTag.setVisibility(View.VISIBLE);
-                pbProcessingProgress.setVisibility(View.VISIBLE);
+
                 processBitmapImage();
 
             }
@@ -168,58 +173,90 @@ public class MainActivity extends AppCompatActivity {
 
     public void processBitmapImage()
     {
-        //Main Application Logic for step one
-
-        //List<Long> plotPoints=new ArrayList<>();
-        DataPoint[] plotPoints=new DataPoint[mBitmap.getWidth()*2];
-        int maxY=0;
-        int minY=0;
-        boolean foundMin=false;
-        int index=0;
+        //Main Application Logic for generating graph points from image
 
         //Set max progress
         pbProcessingProgress.setMax(mBitmap.getWidth());
 
-        for(int i=0;i<mBitmap.getWidth();i++)
-        {
+        //Make progress bas visible
+        pbProcessingProgress.setVisibility(View.VISIBLE);
 
-            for(int j=0;j<mBitmap.getHeight();j++)
-            {
+        //Running calculations on a different thread
+        new Thread(new Runnable() {
+            public void run() {
+                //List<Long> plotPoints=new ArrayList<>();
+                DataPoint[] plotPoints=new DataPoint[mBitmap.getWidth()*2];
+                int maxY=0;
+                int minY=0;
+                boolean foundMin=false;
+                int index=0;
 
-                int color=mBitmap.getPixel(i,j);
-                int A = (color >> 24) & 0xff;
-                int R = (color >> 16) & 0xff;
-                int G = (color >>  8) & 0xff;
-                int B = (color      ) & 0xff;
 
-                if(!foundMin&&((R+G+B/3)>122))
+
+                for(int i=0;i<mBitmap.getWidth();i++)
                 {
-                    minY=j;
-                    foundMin=true;
-                } else if(foundMin&&((R+G+B/3)>122))
-                {
-                    maxY=j;
+
+                    for(int j=0;j<mBitmap.getHeight();j++)
+                    {
+
+                        int color=mBitmap.getPixel(i,j);
+                        int A = (color >> 24) & 0xff;
+                        int R = (color >> 16) & 0xff;
+                        int G = (color >>  8) & 0xff;
+                        int B = (color      ) & 0xff;
+
+                        if(!foundMin&&((R+G+B/3)>122))
+                        {
+                            minY=j;
+                            foundMin=true;
+                        } else if(foundMin&&((R+G+B/3)>122))
+                        {
+                            maxY=j;
+                        }
+
+                    }
+
+                    //Store obtained Data
+                    plotPoints[index]=new DataPoint(i,minY);
+                    index++;
+                    plotPoints[index]=new DataPoint(i,maxY);
+                    index++;
+
+                    //Reset variables
+                    minY=0;
+                    maxY=0;
+                    foundMin=false;
+
+                    final int temp=i;
+
+                    //Update Progress
+                    mainUIHandler.post(new Runnable() {
+                        public void run() {
+
+                            pbProcessingProgress.setProgress(temp);
+
+                        }
+                    });
+
                 }
 
-            }
+                //Update Graph
+                mainUIHandler.post(new Runnable() {
+                    public void run() {
 
-            //Store obtained Data
-            plotPoints[index]=new DataPoint(i,minY);
-            index++;
-            plotPoints[index]=new DataPoint(i,maxY);
-            index++;
+                        tvProgressTag.setText("Done.");
+                        bPerformProcessing.setEnabled(true);
+                        prepareGraph(plotPoints);
+                    }
+                });
 
-            //Reset variables
-            minY=0;
-            maxY=0;
-            foundMin=false;
 
-            //Update Progress
-            pbProcessingProgress.setProgress(i);
-        }
 
-        bPerformProcessing.setEnabled(true);
-        prepareGraph(plotPoints);
+
+
+        }}).start();
+
+
 
     }
 
