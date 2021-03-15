@@ -184,8 +184,11 @@ public class MainActivity extends AppCompatActivity {
         //Running calculations on a different thread
         new Thread(new Runnable() {
             public void run() {
+
+                int bmHeight=mBitmap.getHeight();
+                int bmWidth=mBitmap.getWidth();
                 //List<Long> plotPoints=new ArrayList<>();
-                DataPoint[] plotPoints=new DataPoint[mBitmap.getWidth()*2];
+                DataPoint[] plotPoints=new DataPoint[bmWidth*2];
                 int maxY=0;
                 int minY=0;
                 boolean foundMin=false;
@@ -193,10 +196,11 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                for(int i=0;i<mBitmap.getWidth();i++)
+
+                for(int i=0;i<bmWidth;i++)
                 {
 
-                    for(int j=0;j<mBitmap.getHeight();j++)
+                    for(int j=0;j<bmHeight;j++)
                     {
 
                         int color=mBitmap.getPixel(i,j);
@@ -216,10 +220,10 @@ public class MainActivity extends AppCompatActivity {
 
                     }
 
-                    //Store obtained Data
-                    plotPoints[index]=new DataPoint(i,minY);
+                    //Store obtained Data,but due to inverted y axis conventions for graph and bitmap, invert y values
+                    plotPoints[index]=new DataPoint(i,bmHeight-minY-1);
                     index++;
-                    plotPoints[index]=new DataPoint(i,maxY);
+                    plotPoints[index]=new DataPoint(i,bmHeight-maxY-1);
                     index++;
 
                     //Reset variables
@@ -263,6 +267,7 @@ public class MainActivity extends AppCompatActivity {
     public void prepareGraph(DataPoint[] plotPoints)
     {
         gvGraph.setVisibility(View.VISIBLE);
+        gvGraph.removeAllSeries();
         tvProcessed.setVisibility(View.VISIBLE);
         LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(plotPoints);
         gvGraph.addSeries(series);
