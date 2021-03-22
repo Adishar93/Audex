@@ -1,5 +1,6 @@
 package com.adishar.audex;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,6 +27,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.slider.Slider;
 import com.google.android.material.snackbar.Snackbar;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
@@ -42,15 +44,26 @@ public class MainActivity extends AppCompatActivity {
     private Button bOpenCamera;
     private Button bBrowseImage;
     private Button bPerformProcessing;
+    private Button bFilterGraph;
     private ImageView ivOriginal;
+    private ImageView ivGraph;
+    private ImageView ivFilteredGraph;
     private TextView tvOriginal;
     private TextView tvProcessed;
     private TextView tvProgressTag;
+    private TextView tvFilterLabel;
+    private TextView tvFilterProgressTag;
+    private Slider sFilter;
+
     private Handler mainUIHandler;
 
     private AlertDialog aErrorAlert;
     private GraphView gvGraph;
     private ProgressBar pbProcessingProgress;
+    private ProgressBar pbFilteringProgress;
+
+    private static DataPoint[] mObtainedDataPoints;
+    private static DataPoint[] mFilteredDataPoints;
 
     private Uri mFileUri;
     private Bitmap mBitmap;
@@ -65,31 +78,52 @@ public class MainActivity extends AppCompatActivity {
         bBrowseImage=findViewById(R.id.bBrowseImage);
 
         bPerformProcessing=findViewById(R.id.bPerformProcessing);
-        bPerformProcessing.setVisibility(View.INVISIBLE);
+        bFilterGraph=findViewById(R.id.bFilterGraph);
+
 
         ivOriginal=findViewById(R.id.ivOriginal);
-        ivOriginal.setVisibility(View.INVISIBLE);
-
         gvGraph=findViewById(R.id.graph);
-        gvGraph.setVisibility(View.INVISIBLE);
+        ivGraph=findViewById(R.id.ivgraph);
+        ivFilteredGraph=findViewById(R.id.ivfilteredGraph);
 
         tvOriginal=findViewById(R.id.tvOriginal);
-        tvOriginal.setVisibility(View.INVISIBLE);
-
         tvProcessed=findViewById(R.id.tvProcessed);
-        tvProcessed.setVisibility(View.INVISIBLE);
-
         tvProgressTag=findViewById(R.id.tvProgressTag);
-        tvProgressTag.setVisibility(View.INVISIBLE);
+        tvFilterLabel=findViewById(R.id.tvFilterLabel);
+        tvFilterProgressTag=findViewById(R.id.tvFilterProgressTag);
+
+        sFilter=findViewById(R.id.sFilter);
 
         pbProcessingProgress=findViewById(R.id.pbProcessingProgress);
-        pbProcessingProgress.setVisibility(View.INVISIBLE);
+        pbFilteringProgress=findViewById(R.id.pbFilteringProgress);
 
 
+
+        hideUnnecessaryUIElements();
         setBrowseImageOnClick(bBrowseImage);
         setOpenCameraOnClick(bOpenCamera);
         setPerformProcessingOnClick(bPerformProcessing);
+        setFilterGraphOnClick(bFilterGraph);
+        setFilterOnChangeListener(sFilter);
         setupAlertDialog();
+    }
+
+    public void hideUnnecessaryUIElements()
+    {
+        bPerformProcessing.setVisibility(View.INVISIBLE);
+        bFilterGraph.setVisibility(View.INVISIBLE);
+        ivOriginal.setVisibility(View.INVISIBLE);
+        gvGraph.setVisibility(View.INVISIBLE);
+        ivGraph.setVisibility(View.INVISIBLE);
+        ivFilteredGraph.setVisibility(View.INVISIBLE);
+        tvOriginal.setVisibility(View.INVISIBLE);
+        tvProcessed.setVisibility(View.INVISIBLE);
+        tvProgressTag.setVisibility(View.INVISIBLE);
+        tvFilterLabel.setVisibility(View.INVISIBLE);
+        tvFilterProgressTag.setVisibility(View.INVISIBLE);
+        sFilter.setVisibility(View.INVISIBLE);
+        pbProcessingProgress.setVisibility(View.INVISIBLE);
+        pbFilteringProgress.setVisibility(View.INVISIBLE);
     }
 
     public void setBrowseImageOnClick(Button bBrowseImage)
@@ -106,14 +140,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.setType("application/pdf");
                 intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
 
-                //Hide unusable elements
-                tvOriginal.setVisibility(View.INVISIBLE);
-                ivOriginal.setVisibility(View.INVISIBLE);
-                bPerformProcessing.setVisibility(View.INVISIBLE);
-                tvProcessed.setVisibility(View.INVISIBLE);
-                gvGraph.setVisibility(View.INVISIBLE);
-                pbProcessingProgress.setVisibility(View.INVISIBLE);
-                tvProgressTag.setVisibility(View.INVISIBLE);
+                hideUnnecessaryUIElements();
 
                 startActivityForResult(intent, BROWSE_IMAGE);
 
@@ -126,14 +153,7 @@ public class MainActivity extends AppCompatActivity {
         bOpenCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Hide unusable elements
-                tvOriginal.setVisibility(View.INVISIBLE);
-                ivOriginal.setVisibility(View.INVISIBLE);
-                bPerformProcessing.setVisibility(View.INVISIBLE);
-                tvProcessed.setVisibility(View.INVISIBLE);
-                gvGraph.setVisibility(View.INVISIBLE);
-                pbProcessingProgress.setVisibility(View.INVISIBLE);
-                tvProgressTag.setVisibility(View.INVISIBLE);
+             hideUnnecessaryUIElements();
 
                 //Yet to add code
             }
@@ -149,9 +169,41 @@ public class MainActivity extends AppCompatActivity {
                 bPerformProcessing.setEnabled(false);
                 tvProgressTag.setText("Processing...");
                 tvProgressTag.setVisibility(View.VISIBLE);
+                gvGraph.setVisibility(View.INVISIBLE);
+                ivGraph.setVisibility(View.INVISIBLE);
+                tvFilterLabel.setVisibility(View.INVISIBLE);
+                sFilter.setVisibility(View.INVISIBLE);
+                bFilterGraph.setVisibility(View.INVISIBLE);
+                ivFilteredGraph.setVisibility(View.INVISIBLE);
 
                 processBitmapImage();
 
+            }
+        });
+    }
+
+    public void setFilterGraphOnClick(Button filterGraph)
+    {
+        filterGraph.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bFilterGraph.setEnabled(false);
+                tvFilterProgressTag.setText("Filtering...");
+                tvFilterProgressTag.setVisibility(View.VISIBLE);
+                gvGraph.setVisibility(View.INVISIBLE);
+                ivFilteredGraph.setVisibility(View.INVISIBLE);
+
+                processFilterDataPoints();
+            }
+        });
+    }
+
+    public void setFilterOnChangeListener(Slider slider)
+    {
+        slider.addOnChangeListener(new Slider.OnChangeListener() {
+            @Override
+            public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
+                tvFilterLabel.setText("Filter Strength  "+((int)value));
             }
         });
     }
@@ -200,6 +252,7 @@ public class MainActivity extends AppCompatActivity {
                 for(int i=0;i<bmWidth;i++)
                 {
 
+
                     for(int j=0;j<bmHeight;j++)
                     {
 
@@ -243,6 +296,7 @@ public class MainActivity extends AppCompatActivity {
                     });
 
                 }
+                mObtainedDataPoints=plotPoints;
 
                 //Update Graph
                 mainUIHandler.post(new Runnable() {
@@ -250,7 +304,14 @@ public class MainActivity extends AppCompatActivity {
 
                         tvProgressTag.setText("Done.");
                         bPerformProcessing.setEnabled(true);
-                        prepareGraph(plotPoints);
+
+                        Bitmap graphImage=prepareGraph(plotPoints);
+                        Glide.with(getApplicationContext()).load(graphImage).transform(new RoundedCorners(30)).into(ivGraph);
+                        ivGraph.setVisibility(View.VISIBLE);
+                        tvProcessed.setVisibility(View.VISIBLE);
+                        tvFilterLabel.setVisibility(View.VISIBLE);
+                        sFilter.setVisibility(View.VISIBLE);
+                        bFilterGraph.setVisibility(View.VISIBLE);
                     }
                 });
 
@@ -264,13 +325,98 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void prepareGraph(DataPoint[] plotPoints)
+    public void processFilterDataPoints()
     {
-        gvGraph.setVisibility(View.VISIBLE);
+        final int filter=(int)sFilter.getValue();
+        //Set max progress
+        pbFilteringProgress.setMax(mBitmap.getWidth()-filter);
+
+        //Make progress bas visible
+        pbFilteringProgress.setVisibility(View.VISIBLE);
+
+        //Running calculations on a different thread
+        new Thread(new Runnable() {
+            public void run() {
+
+                int bmHeight=mBitmap.getHeight();
+                int bmWidth=mBitmap.getWidth();
+
+
+
+
+
+                //Copy Obtained Values to plotPoints
+                final DataPoint[] plotPoints=mObtainedDataPoints.clone();
+                if(filter!=0)
+                {
+
+
+
+                //Average values to next filter values
+                for(int i=0;i<bmWidth-filter;i++)
+                {
+                    //Log.d("Halwa","test"+i);
+                    long sum=0;
+                    long avg=0;
+
+                    for(int j=i;j<=i+filter;j=j+2)
+                    {
+                        sum=sum+(int)plotPoints[j].getY();
+                    }
+                    avg=sum/(filter/2);
+
+                    //Log.d("Halwa","original"+plotPoints[i].getY());
+                    //Log.d("Halwa","new"+avg);
+
+                    plotPoints[i]=new DataPoint(plotPoints[i].getX(),avg);
+
+                    final int temp=i;
+
+                    //Update Progress
+                    mainUIHandler.post(new Runnable() {
+                        public void run() {
+
+                            pbFilteringProgress.setProgress(temp);
+
+                        }
+                    });
+
+                }
+                }
+                mFilteredDataPoints=plotPoints;
+
+                //Update Graph
+                mainUIHandler.post(new Runnable() {
+                    public void run() {
+
+
+
+                        tvFilterProgressTag.setText("Done.");
+                        bFilterGraph.setEnabled(true);
+
+                        Bitmap graphImage=prepareGraph(plotPoints);
+                        Glide.with(getApplicationContext()).load(graphImage).transform(new RoundedCorners(30)).into(ivFilteredGraph);
+                        ivFilteredGraph.setVisibility(View.VISIBLE);
+                    }
+                });
+
+
+
+
+
+            }}).start();
+
+    }
+
+    public Bitmap prepareGraph(DataPoint[] plotPoints)
+    {
         gvGraph.removeAllSeries();
-        tvProcessed.setVisibility(View.VISIBLE);
         LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(plotPoints);
         gvGraph.addSeries(series);
+        gvGraph.setVisibility(View.VISIBLE);
+        gvGraph.setVisibility(View.INVISIBLE);
+        return gvGraph.takeSnapshot();
+
     }
 
 
@@ -319,15 +465,7 @@ public class MainActivity extends AppCompatActivity {
 
                     catch(IOException ie)
                     {
-                        //Hide unusable elements
-                        tvOriginal.setVisibility(View.INVISIBLE);
-                        ivOriginal.setVisibility(View.INVISIBLE);
-                        bPerformProcessing.setVisibility(View.INVISIBLE);
-                        tvProcessed.setVisibility(View.INVISIBLE);
-                        gvGraph.setVisibility(View.INVISIBLE);
-                        pbProcessingProgress.setVisibility(View.INVISIBLE);
-                        tvProgressTag.setVisibility(View.INVISIBLE);
-                        aErrorAlert.show();
+                        hideUnnecessaryUIElements();
                         //Snackbar.make(getWindow().getDecorView().getRootView(),"Error while selecting image",Snackbar.LENGTH_SHORT).show();
                     }
 
