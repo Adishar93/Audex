@@ -363,7 +363,7 @@ public class MainActivity extends AppCompatActivity {
                     {
                         sum=sum+(int)plotPoints[j].getY();
                     }
-                    avg=sum/(filter/2);
+                    avg=sum/((filter/2)+1);
 
                     //Log.d("Halwa","original"+plotPoints[i].getY());
                     //Log.d("Halwa","new"+avg);
