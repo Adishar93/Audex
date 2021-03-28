@@ -24,6 +24,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.adishar.audex.Utility.ConverterClass;
+import com.adishar.audex.Utility.PlayMediaAudio;
+import com.adishar.audex.Utility.WavFileGenerator;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -45,14 +48,18 @@ public class MainActivity extends AppCompatActivity {
     private Button bBrowseImage;
     private Button bPerformProcessing;
     private Button bFilterGraph;
+    private Button bPlayAudio;
+
     private ImageView ivOriginal;
     private ImageView ivGraph;
     private ImageView ivFilteredGraph;
+
     private TextView tvOriginal;
     private TextView tvProcessed;
     private TextView tvProgressTag;
     private TextView tvFilterLabel;
     private TextView tvFilterProgressTag;
+
     private Slider sFilter;
 
     private Handler mainUIHandler;
@@ -79,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
 
         bPerformProcessing=findViewById(R.id.bPerformProcessing);
         bFilterGraph=findViewById(R.id.bFilterGraph);
+        bPlayAudio=findViewById(R.id.bPlayAudio);
 
 
         ivOriginal=findViewById(R.id.ivOriginal);
@@ -104,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
         setOpenCameraOnClick(bOpenCamera);
         setPerformProcessingOnClick(bPerformProcessing);
         setFilterGraphOnClick(bFilterGraph);
+        setPlayAudioOnClick(bPlayAudio);
         setFilterOnChangeListener(sFilter);
         setupAlertDialog();
     }
@@ -175,6 +184,8 @@ public class MainActivity extends AppCompatActivity {
                 sFilter.setVisibility(View.INVISIBLE);
                 bFilterGraph.setVisibility(View.INVISIBLE);
                 ivFilteredGraph.setVisibility(View.INVISIBLE);
+                pbFilteringProgress.setVisibility(View.INVISIBLE);
+                tvFilterProgressTag.setVisibility(View.INVISIBLE);
 
                 processBitmapImage();
 
@@ -204,6 +215,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
                 tvFilterLabel.setText("Filter Strength  "+((int)value));
+            }
+        });
+    }
+
+    public void setPlayAudioOnClick(Button bPlayAudio)
+    {
+        bPlayAudio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                WavFileGenerator.saveWavFile(getApplicationContext(),9, ConverterClass.convertDataPointListToIntegerArray(mFilteredDataPoints),"Test2");
+                PlayMediaAudio.playAudioFile(getApplicationContext(),"Test2.wav");
+
             }
         });
     }
@@ -480,4 +503,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        PlayMediaAudio.releaseMediaPlayerResource();
+    }
 }

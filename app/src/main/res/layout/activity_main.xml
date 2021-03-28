@@ -187,6 +187,16 @@
         android:layout_margin="10dp"
         />
 
+    <Button
+        android:id="@+id/bPlayAudio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Generate + Play Audio"
+        android:layout_below="@id/ivfilteredGraph"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="30dp"
+        />
+
 
 
 
