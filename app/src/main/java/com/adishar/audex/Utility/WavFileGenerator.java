@@ -24,8 +24,9 @@ public class WavFileGenerator {
         byte[] AUDIO_FORMAT=new byte[]{0x1,0x0};
         byte[] SUBCHUNK_ID=new byte[]{0x64,0x61,0x74,0x61};
         int BYTES_PER_SAMPLE=1;
-        int sampleRate=48000;
+        int sampleRate=16000;
         int channelcount=1;
+
 
         int dataLength=values.length*stretch*BYTES_PER_SAMPLE;
         int byteRate=sampleRate*channelcount*BYTES_PER_SAMPLE;
@@ -40,22 +41,22 @@ public class WavFileGenerator {
             //Initializing wav files with meta data
             outputWav.write(RIFF_HEADER,0,RIFF_HEADER.length);
             byteBuffer = ByteBuffer.allocate(Integer.BYTES);
-            outputWav.write(byteBuffer.putInt(dataLength+40).array(),0,4);
+            outputWav.write(byteBuffer.putInt(dataLength+44).array(),0,4);
             outputWav.write(FORMAT_WAVE,0,FORMAT_WAVE.length);
             outputWav.write(FORMAT_TAG,0,FORMAT_TAG.length);
             byteBuffer = ByteBuffer.allocate(Integer.BYTES);
             outputWav.write(byteBuffer.putInt(16).array(),0,4);
             outputWav.write(AUDIO_FORMAT,0,AUDIO_FORMAT.length);
             byteBuffer = ByteBuffer.allocate(Integer.BYTES);
-            outputWav.write(byteBuffer.putInt(channelcount).array(),0,2);
+            outputWav.write(byteBuffer.putInt(channelcount).array(),2,2);
             byteBuffer = ByteBuffer.allocate(Integer.BYTES);
             outputWav.write(byteBuffer.putInt(sampleRate).array(),0,4);
             byteBuffer = ByteBuffer.allocate(Integer.BYTES);
             outputWav.write(byteBuffer.putInt(byteRate).array(),0,4);
             byteBuffer = ByteBuffer.allocate(Integer.BYTES);
-            outputWav.write(byteBuffer.putInt(blockAlign).array(),0,2);
+            outputWav.write(byteBuffer.putInt(blockAlign).array(),2,2);
             byteBuffer = ByteBuffer.allocate(Integer.BYTES);
-            outputWav.write(byteBuffer.putInt(BYTES_PER_SAMPLE*8).array(),0,2);
+            outputWav.write(byteBuffer.putInt((BYTES_PER_SAMPLE*8)).array(),2,2);
             outputWav.write(SUBCHUNK_ID,0,SUBCHUNK_ID.length);
             byteBuffer = ByteBuffer.allocate(Integer.BYTES);
             outputWav.write(byteBuffer.putInt(dataLength).array(),0,4);
@@ -74,9 +75,9 @@ public class WavFileGenerator {
                 for(int x=0;x<stretch;x++)
                 {
                     double finalV=x/(double)stretch*scaledV+(1-x/(double)stretch)*lastV;
-                    byteBuffer = ByteBuffer.allocate(Double.BYTES);
-                    byteBuffer.putDouble(finalV);
-                    outputWav.write(byteBuffer.array());
+                    int convert=(int)finalV;
+                    byteBuffer = ByteBuffer.allocate(Integer.BYTES);
+                    outputWav.write(byteBuffer.putInt(convert).array()[3]);
                 }
                 lastV=(int)scaledV;
             }
