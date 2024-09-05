@@ -210,8 +210,8 @@ public class MainActivity extends AppCompatActivity {
         bPlayAudio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                WavFileGenerator.saveWavFile(getApplicationContext(), 9, ConverterClass.convertDataPointListToIntegerArray(mFilteredDataPoints), "Test2");
-                PlayMediaAudio.playAudioFile(getApplicationContext(), "Test2.wav");
+                WavFileGenerator.saveWavFile(getApplicationContext(), 9, ConverterClass.convertDataPointListToIntegerArray(mFilteredDataPoints), "Test10");
+                PlayMediaAudio.playAudioFile(getApplicationContext(), "Test10.wav");
 
             }
         });
@@ -255,10 +255,9 @@ public class MainActivity extends AppCompatActivity {
 
 
                 for (int i = 0; i < bmWidth; i++) {
+                    maxY = 0;
+                    minY = bmWidth;
                     for (int j = 0; j < bmHeight; j++) {
-                        maxY = 0;
-                        minY = bmWidth;
-
                         int color = mBitmap.getPixel(i, j);
                         int A = (color >> 24) & 0xff;
                         int R = (color >> 16) & 0xff;
@@ -267,15 +266,15 @@ public class MainActivity extends AppCompatActivity {
 
                         if (((R + G + B / 3) > 122)) {
                             minY = Math.min(minY,j);
-                            maxY = Math.max(maxY,i);
+                            maxY = Math.max(maxY,j);
                         }
 
                     }
 
                     //Store obtained Data,but due to inverted y axis conventions for graph and bitmap, invert y values
-                    plotPoints[index] = new DataPoint(i, bmHeight - minY - 1);
+                    plotPoints[index] = new DataPoint(index, bmHeight - minY - 1);
                     index++;
-                    plotPoints[index] = new DataPoint(i, bmHeight - maxY - 1);
+                    plotPoints[index] = new DataPoint(index, bmHeight - maxY - 1);
                     index++;
 
                     final int xProgress = i;
