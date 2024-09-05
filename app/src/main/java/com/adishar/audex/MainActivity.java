@@ -248,15 +248,12 @@ public class MainActivity extends AppCompatActivity {
                 int bmWidth = mBitmap.getWidth();
                 //List<Long> plotPoints=new ArrayList<>();
                 DataPoint[] plotPoints = new DataPoint[bmWidth * 2];
-                int maxY = 0;
-                int minY = 0;
-                boolean foundMin = false;
                 int index = 0;
 
 
                 for (int i = 0; i < bmWidth; i++) {
-                    maxY = 0;
-                    minY = bmWidth;
+                    int maxY = 0;
+                    int minY = bmHeight;
                     for (int j = 0; j < bmHeight; j++) {
                         int color = mBitmap.getPixel(i, j);
                         int A = (color >> 24) & 0xff;
@@ -336,15 +333,15 @@ public class MainActivity extends AppCompatActivity {
                 if (filter != 0) {
 
                     //Average values to next filter values
-                    for (int i = 0; i < bmWidth - filter; i++) {
+                    for (int i = 0; i < bmWidth*2 - filter; i++) {
                         //Log.d("Halwa","test"+i);
                         long sum = 0;
                         long avg = 0;
 
-                        for (int j = i; j <= i + filter; j = j + 2) {
+                        for (int j = i; j < i + filter; j++) {
                             sum = sum + (int) plotPoints[j].getY();
                         }
-                        avg = sum / ((filter / 2) + 1);
+                        avg = sum /filter;
 
                         //Log.d("Halwa","original"+plotPoints[i].getY());
                         //Log.d("Halwa","new"+avg);
