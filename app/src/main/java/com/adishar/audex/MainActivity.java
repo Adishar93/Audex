@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Build;
@@ -17,12 +16,10 @@ import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.Transformation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.adishar.audex.Utility.ConverterClass;
 import com.adishar.audex.Utility.PlayMediaAudio;
@@ -31,18 +28,15 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
-import com.google.android.material.snackbar.Snackbar;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private static final int BROWSE_IMAGE=99;
-    private static final int OPEN_CAMERA=999;
+    private static final int BROWSE_IMAGE = 99;
+    private static final int OPEN_CAMERA = 999;
 
     private Button bOpenCamera;
     private Button bBrowseImage;
@@ -80,34 +74,33 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mainUIHandler=new Handler(this.getMainLooper());
-        bOpenCamera=findViewById(R.id.bOpenCamera);
-        bBrowseImage=findViewById(R.id.bBrowseImage);
+        mainUIHandler = new Handler(this.getMainLooper());
+        bOpenCamera = findViewById(R.id.bOpenCamera);
+        bBrowseImage = findViewById(R.id.bBrowseImage);
 
-        bPerformProcessing=findViewById(R.id.bPerformProcessing);
-        bFilterGraph=findViewById(R.id.bFilterGraph);
-        bPlayAudio=findViewById(R.id.bPlayAudio);
-
-
-        ivOriginal=findViewById(R.id.ivOriginal);
-        gvGraph=findViewById(R.id.graph);
-        ivGraph=findViewById(R.id.ivgraph);
-        ivFilteredGraph=findViewById(R.id.ivfilteredGraph);
-
-        tvOriginal=findViewById(R.id.tvOriginal);
-        tvProcessed=findViewById(R.id.tvProcessed);
-        tvProgressTag=findViewById(R.id.tvProgressTag);
-        tvFilterLabel=findViewById(R.id.tvFilterLabel);
-        tvFilterProgressTag=findViewById(R.id.tvFilterProgressTag);
-
-        sFilter=findViewById(R.id.sFilter);
-
-        pbProcessingProgress=findViewById(R.id.pbProcessingProgress);
-        pbFilteringProgress=findViewById(R.id.pbFilteringProgress);
+        bPerformProcessing = findViewById(R.id.bPerformProcessing);
+        bFilterGraph = findViewById(R.id.bFilterGraph);
+        bPlayAudio = findViewById(R.id.bPlayAudio);
 
 
+        ivOriginal = findViewById(R.id.ivOriginal);
+        gvGraph = findViewById(R.id.graph);
+        ivGraph = findViewById(R.id.ivgraph);
+        ivFilteredGraph = findViewById(R.id.ivfilteredGraph);
 
-        hideUnnecessaryUIElements();
+        tvOriginal = findViewById(R.id.tvOriginal);
+        tvProcessed = findViewById(R.id.tvProcessed);
+        tvProgressTag = findViewById(R.id.tvProgressTag);
+        tvFilterLabel = findViewById(R.id.tvFilterLabel);
+        tvFilterProgressTag = findViewById(R.id.tvFilterProgressTag);
+
+        sFilter = findViewById(R.id.sFilter);
+
+        pbProcessingProgress = findViewById(R.id.pbProcessingProgress);
+        pbFilteringProgress = findViewById(R.id.pbFilteringProgress);
+
+
+        hideUIElements();
         setBrowseImageOnClick(bBrowseImage);
         setOpenCameraOnClick(bOpenCamera);
         setPerformProcessingOnClick(bPerformProcessing);
@@ -117,8 +110,7 @@ public class MainActivity extends AppCompatActivity {
         setupAlertDialog();
     }
 
-    public void hideUnnecessaryUIElements()
-    {
+    public void hideUIElements() {
         bPerformProcessing.setVisibility(View.INVISIBLE);
         bFilterGraph.setVisibility(View.INVISIBLE);
         ivOriginal.setVisibility(View.INVISIBLE);
@@ -135,21 +127,20 @@ public class MainActivity extends AppCompatActivity {
         pbFilteringProgress.setVisibility(View.INVISIBLE);
     }
 
-    public void setBrowseImageOnClick(Button bBrowseImage)
-    {
+    public void setBrowseImageOnClick(Button bBrowseImage) {
 
-        bBrowseImage.setOnClickListener(new View.OnClickListener(){
+        bBrowseImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
 
-                String mimeTypes[]= {"image/*"};
+                String mimeTypes[] = {"image/*"};
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 intent.setType("application/pdf");
                 intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
 
-                hideUnnecessaryUIElements();
+                hideUIElements();
 
                 startActivityForResult(intent, BROWSE_IMAGE);
 
@@ -157,12 +148,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void setOpenCameraOnClick(Button bOpenCamera)
-    {
+    public void setOpenCameraOnClick(Button bOpenCamera) {
         bOpenCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-             hideUnnecessaryUIElements();
+                hideUIElements();
 
                 //Yet to add code
             }
@@ -170,8 +160,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void setPerformProcessingOnClick(Button bPerformProcessing)
-    {
+    public void setPerformProcessingOnClick(Button bPerformProcessing) {
         bPerformProcessing.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -193,8 +182,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void setFilterGraphOnClick(Button filterGraph)
-    {
+    public void setFilterGraphOnClick(Button filterGraph) {
         filterGraph.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -209,45 +197,41 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void setFilterOnChangeListener(Slider slider)
-    {
+    public void setFilterOnChangeListener(Slider slider) {
         slider.addOnChangeListener(new Slider.OnChangeListener() {
             @Override
             public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                tvFilterLabel.setText("Filter Strength  "+((int)value));
+                tvFilterLabel.setText("Filter Strength  " + ((int) value));
             }
         });
     }
 
-    public void setPlayAudioOnClick(Button bPlayAudio)
-    {
+    public void setPlayAudioOnClick(Button bPlayAudio) {
         bPlayAudio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                WavFileGenerator.saveWavFile(getApplicationContext(),9, ConverterClass.convertDataPointListToIntegerArray(mFilteredDataPoints),"Test2");
-                PlayMediaAudio.playAudioFile(getApplicationContext(),"Test2.wav");
+                WavFileGenerator.saveWavFile(getApplicationContext(), 9, ConverterClass.convertDataPointListToIntegerArray(mFilteredDataPoints), "Test2");
+                PlayMediaAudio.playAudioFile(getApplicationContext(), "Test2.wav");
 
             }
         });
     }
 
 
-    public void setupAlertDialog()
-    {
-        AlertDialog.Builder dialogBuilder=new MaterialAlertDialogBuilder(this);
+    public void setupAlertDialog() {
+        AlertDialog.Builder dialogBuilder = new MaterialAlertDialogBuilder(this);
         dialogBuilder.setMessage("Sorry! error occured while opening the image");
-        dialogBuilder.setPositiveButton("OK",new AlertDialog.OnClickListener(){
+        dialogBuilder.setPositiveButton("OK", new AlertDialog.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
             }
         });
-        aErrorAlert=dialogBuilder.create();
+        aErrorAlert = dialogBuilder.create();
 
     }
 
-    public void processBitmapImage()
-    {
+    public void processBitmapImage() {
         //Main Application Logic for generating graph points from image
 
         //Set max progress
@@ -260,66 +244,53 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             public void run() {
 
-                int bmHeight=mBitmap.getHeight();
-                int bmWidth=mBitmap.getWidth();
+                int bmHeight = mBitmap.getHeight();
+                int bmWidth = mBitmap.getWidth();
                 //List<Long> plotPoints=new ArrayList<>();
-                DataPoint[] plotPoints=new DataPoint[bmWidth*2];
-                int maxY=0;
-                int minY=0;
-                boolean foundMin=false;
-                int index=0;
+                DataPoint[] plotPoints = new DataPoint[bmWidth * 2];
+                int maxY = 0;
+                int minY = 0;
+                boolean foundMin = false;
+                int index = 0;
 
 
+                for (int i = 0; i < bmWidth; i++) {
+                    for (int j = 0; j < bmHeight; j++) {
+                        maxY = 0;
+                        minY = bmWidth;
 
-
-                for(int i=0;i<bmWidth;i++)
-                {
-
-
-                    for(int j=0;j<bmHeight;j++)
-                    {
-
-                        int color=mBitmap.getPixel(i,j);
+                        int color = mBitmap.getPixel(i, j);
                         int A = (color >> 24) & 0xff;
                         int R = (color >> 16) & 0xff;
-                        int G = (color >>  8) & 0xff;
-                        int B = (color      ) & 0xff;
+                        int G = (color >> 8) & 0xff;
+                        int B = (color) & 0xff;
 
-                        if(!foundMin&&((R+G+B/3)>122))
-                        {
-                            minY=j;
-                            foundMin=true;
-                        } else if(foundMin&&((R+G+B/3)>122))
-                        {
-                            maxY=j;
+                        if (((R + G + B / 3) > 122)) {
+                            minY = Math.min(minY,j);
+                            maxY = Math.max(maxY,i);
                         }
 
                     }
 
                     //Store obtained Data,but due to inverted y axis conventions for graph and bitmap, invert y values
-                    plotPoints[index]=new DataPoint(i,bmHeight-minY-1);
+                    plotPoints[index] = new DataPoint(i, bmHeight - minY - 1);
                     index++;
-                    plotPoints[index]=new DataPoint(i,bmHeight-maxY-1);
+                    plotPoints[index] = new DataPoint(i, bmHeight - maxY - 1);
                     index++;
 
-                    //Reset variables
-                    minY=0;
-                    maxY=0;
-                    foundMin=false;
-
-                    final int temp=i;
+                    final int xProgress = i;
 
                     //Update Progress
                     mainUIHandler.post(new Runnable() {
                         public void run() {
 
-                            pbProcessingProgress.setProgress(temp);
+                            pbProcessingProgress.setProgress(xProgress);
 
                         }
                     });
 
                 }
-                mObtainedDataPoints=plotPoints;
+                mObtainedDataPoints = plotPoints;
 
                 //Update Graph
                 mainUIHandler.post(new Runnable() {
@@ -328,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
                         tvProgressTag.setText("Done.");
                         bPerformProcessing.setEnabled(true);
 
-                        Bitmap graphImage=prepareGraph(plotPoints);
+                        Bitmap graphImage = prepareGraph(plotPoints);
                         Glide.with(getApplicationContext()).load(graphImage).transform(new RoundedCorners(30)).into(ivGraph);
                         ivGraph.setVisibility(View.VISIBLE);
                         tvProcessed.setVisibility(View.VISIBLE);
@@ -339,20 +310,16 @@ public class MainActivity extends AppCompatActivity {
                 });
 
 
-
-
-
-        }}).start();
-
+            }
+        }).start();
 
 
     }
 
-    public void processFilterDataPoints()
-    {
-        final int filter=(int)sFilter.getValue();
+    public void processFilterDataPoints() {
+        final int filter = (int) sFilter.getValue();
         //Set max progress
-        pbFilteringProgress.setMax(mBitmap.getWidth()-filter);
+        pbFilteringProgress.setMax(mBitmap.getWidth() - filter);
 
         //Make progress bas visible
         pbFilteringProgress.setVisibility(View.VISIBLE);
@@ -361,78 +328,66 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             public void run() {
 
-                int bmHeight=mBitmap.getHeight();
-                int bmWidth=mBitmap.getWidth();
-
-
-
+                int bmHeight = mBitmap.getHeight();
+                int bmWidth = mBitmap.getWidth();
 
 
                 //Copy Obtained Values to plotPoints
-                final DataPoint[] plotPoints=mObtainedDataPoints.clone();
-                if(filter!=0)
-                {
+                final DataPoint[] plotPoints = mObtainedDataPoints.clone();
+                if (filter != 0) {
 
+                    //Average values to next filter values
+                    for (int i = 0; i < bmWidth - filter; i++) {
+                        //Log.d("Halwa","test"+i);
+                        long sum = 0;
+                        long avg = 0;
 
-
-                //Average values to next filter values
-                for(int i=0;i<bmWidth-filter;i++)
-                {
-                    //Log.d("Halwa","test"+i);
-                    long sum=0;
-                    long avg=0;
-
-                    for(int j=i;j<=i+filter;j=j+2)
-                    {
-                        sum=sum+(int)plotPoints[j].getY();
-                    }
-                    avg=sum/((filter/2)+1);
-
-                    //Log.d("Halwa","original"+plotPoints[i].getY());
-                    //Log.d("Halwa","new"+avg);
-
-                    plotPoints[i]=new DataPoint(plotPoints[i].getX(),avg);
-
-                    final int temp=i;
-
-                    //Update Progress
-                    mainUIHandler.post(new Runnable() {
-                        public void run() {
-
-                            pbFilteringProgress.setProgress(temp);
-
+                        for (int j = i; j <= i + filter; j = j + 2) {
+                            sum = sum + (int) plotPoints[j].getY();
                         }
-                    });
+                        avg = sum / ((filter / 2) + 1);
 
+                        //Log.d("Halwa","original"+plotPoints[i].getY());
+                        //Log.d("Halwa","new"+avg);
+
+                        plotPoints[i] = new DataPoint(plotPoints[i].getX(), avg);
+
+                        final int temp = i;
+
+                        //Update Progress
+                        mainUIHandler.post(new Runnable() {
+                            public void run() {
+
+                                pbFilteringProgress.setProgress(temp);
+
+                            }
+                        });
+
+                    }
                 }
-                }
-                mFilteredDataPoints=plotPoints;
+                mFilteredDataPoints = plotPoints;
 
                 //Update Graph
                 mainUIHandler.post(new Runnable() {
                     public void run() {
 
 
-
                         tvFilterProgressTag.setText("Done.");
                         bFilterGraph.setEnabled(true);
 
-                        Bitmap graphImage=prepareGraph(plotPoints);
+                        Bitmap graphImage = prepareGraph(plotPoints);
                         Glide.with(getApplicationContext()).load(graphImage).transform(new RoundedCorners(30)).into(ivFilteredGraph);
                         ivFilteredGraph.setVisibility(View.VISIBLE);
                     }
                 });
 
 
-
-
-
-            }}).start();
+            }
+        }).start();
 
     }
 
-    public Bitmap prepareGraph(DataPoint[] plotPoints)
-    {
+    public Bitmap prepareGraph(DataPoint[] plotPoints) {
         gvGraph.removeAllSeries();
         LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(plotPoints);
         gvGraph.addSeries(series);
@@ -447,7 +402,7 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        switch(requestCode) {
+        switch (requestCode) {
 
             case OPEN_CAMERA:
 
@@ -465,12 +420,11 @@ public class MainActivity extends AppCompatActivity {
 
             case BROWSE_IMAGE:
 
-                if(resultCode == RESULT_OK)
-                {
+                if (resultCode == RESULT_OK) {
                     Log.d("BrowseImage:", "Result OK");
 
 
-                    mFileUri=data.getData();
+                    mFileUri = data.getData();
 
 
                     try {
@@ -484,11 +438,8 @@ public class MainActivity extends AppCompatActivity {
                         ivOriginal.setVisibility(View.VISIBLE);
                         bPerformProcessing.setVisibility(View.VISIBLE);
                         Glide.with(getApplicationContext()).load(mFileUri).transform(new RoundedCorners(30)).into(ivOriginal);
-                    }
-
-                    catch(IOException ie)
-                    {
-                        hideUnnecessaryUIElements();
+                    } catch (IOException ie) {
+                        hideUIElements();
                         //Snackbar.make(getWindow().getDecorView().getRootView(),"Error while selecting image",Snackbar.LENGTH_SHORT).show();
                     }
 
